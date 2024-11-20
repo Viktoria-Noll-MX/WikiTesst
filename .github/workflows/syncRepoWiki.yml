@@ -52,7 +52,8 @@ jobs:
             echo "Changes committed. Pushing to branch $BRANCH."
             git push -f $CODE_REPOSITORY_URL HEAD:$BRANCH  # Push to the main repository's main branch
           else
-            echo "No changes to commit."
-            echo "Creating an empty commit to trigger actions."
-            git commit --allow-empty -m "Triggering action with empty commit"
+            echo "No changes to commit. The branch is up to date."
+            echo "Exiting workflow."
+            exit 0  # End the workflow gracefully
           fi
+
