@@ -1,8 +1,9 @@
 name: Update Wiki
 
 on:
-  schedule:
-    - cron: '0 8-16 * * *'  # Runs every hour from 8 AM to 4 PM
+  push:
+    branches:
+      - main
   workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
@@ -18,35 +19,27 @@ jobs:
           echo "CODE_REPOSITORY_URL=https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" >> $GITHUB_ENV
           echo "BRANCH=main" >> $GITHUB_ENV  # Set the branch variable
 
-      - name: Clone wiki
+      - name: Clone wiki into wikiSync
         run: |
-          git clone $WIKI_REPOSITORY_URL wiki
-          echo "Cloned wiki repository to 'wiki' directory."
+          git clone $WIKI_REPOSITORY_URL wikiSync
+          echo "Cloned wiki repository into 'wikiSync' directory."
 
       - name: Verify wiki content
         run: |
-          echo "Listing contents of the wiki directory:"
-          ls -la wiki
-          if [ -z "$(ls -A wiki)" ]; then
-            echo "Wiki directory is empty. Cloning may have failed."
+          echo "Listing contents of the wikiSync directory:"
+          ls -la wikiSync
+          if [ -z "$(ls -A wikiSync)" ]; then
+            echo "wikiSync directory is empty. Cloning may have failed."
             exit 1
           else
-            echo "Wiki directory contains files."
+            echo "wikiSync directory contains files."
           fi
-
-      - name: Copy wiki content to subfolder
-        run: |
-          mkdir -p wikiSync
-          echo "Copying files from wiki to wikiSync directory..."
-          cp -r wiki/* wikiSync/
-          echo "Contents of wikiSync:"
-          ls -la wikiSync/
 
       - name: Commit and push changes to main repository
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add wikiSync
+          git add wikiSync  # Add the wikiSync directory directly
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Update wiki content"
             echo "Changes committed. Pushing to branch $BRANCH."
@@ -56,4 +49,3 @@ jobs:
             echo "Exiting workflow."
             exit 0  # End the workflow gracefully
           fi
-
