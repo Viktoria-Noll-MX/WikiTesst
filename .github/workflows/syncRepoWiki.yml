@@ -6,14 +6,11 @@ on:
       - main
   workflow_dispatch:  # Allows manual triggering of the workflow
 
-permissions:
-  contents: write  # Allow the workflow to push changes
-
 jobs:
   update-wiki:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout main repository
         uses: actions/checkout@v4
 
       - name: Set up environment variables
@@ -22,17 +19,10 @@ jobs:
           echo "CODE_REPOSITORY_URL=https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" >> $GITHUB_ENV
           echo "BRANCH=main" >> $GITHUB_ENV  # Set the branch variable
 
-      - name: Checkout main branch
-        run: |
-          git checkout main || git checkout -b main
-
       - name: Clone wiki
         run: |
           git clone $WIKI_REPOSITORY_URL wiki
-          cd wiki
-          git remote add repo $CODE_REPOSITORY_URL
           echo "Cloned wiki repository to 'wiki' directory."
-          git checkout master || echo "Master branch does not exist, staying on current branch."
 
       - name: Verify wiki content
         run: |
@@ -45,33 +35,19 @@ jobs:
             echo "Wiki directory contains files."
           fi
 
-      - name: Update wiki content
+      - name: Copy wiki content to subfolder
         run: |
-          # Create the wiki subfolder if it doesn't exist
-          if [ ! -d "$GITHUB_WORKSPACE/wiki" ]; then
-            mkdir -p "$GITHUB_WORKSPACE/wiki"
-            echo "Created directory: $GITHUB_WORKSPACE/wiki"
-          else
-            echo "Directory already exists: $GITHUB_WORKSPACE/wiki"
-          fi
-
-          echo "Copying files from wiki to the wiki subfolder..."
-          cp -r wiki/* "$GITHUB_WORKSPACE/wiki/"  # Copy files to the wiki subfolder
-
-          echo "Contents of wiki subfolder:"
-          ls -la "$GITHUB_WORKSPACE/wiki/"
+          mkdir -p wiki_updates
+          echo "Copying files from wiki to updates directory..."
+          cp -r wiki/* wiki_updates/
+          echo "Contents of wiki_updates:"
+          ls -la wiki_updates/
 
       - name: Commit and push changes to main repository
         run: |
-          cd "$GITHUB_WORKSPACE/wiki"
-          git init  # Initialize a new git repository in the wiki directory
-          
-          # Set user name and email for commits
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          echo "Checking git status..."
-          git add .
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add wiki_updates
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Update wiki content"
             echo "Changes committed. Pushing to branch $BRANCH."
