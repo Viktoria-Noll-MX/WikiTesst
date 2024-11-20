@@ -46,7 +46,7 @@ jobs:
   update-wiki:
     runs-on: ubuntu-latest
     needs: check-for-changes
-    if: env.changes == 'true'  # Only run if changes were detected
+    if: ${{ env.changes == 'true' }}  # Only run if changes were detected
     steps:
       - name: Clone wiki
         run: |
