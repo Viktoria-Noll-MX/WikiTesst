@@ -56,11 +56,11 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add wikiSync
+          git add wikiSync  # Only add the wikiSync directory
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Update wiki content"
+            git commit -m "Update wikiSync content"
             echo "Changes committed. Pushing to branch $BRANCH."
-            git push -f $CODE_REPOSITORY_URL HEAD:$BRANCH  # Push to the main repository's main branch
+            git push -f $CODE_REPOSITORY_URL HEAD:$BRANCH
           else
             echo "No changes to commit."
             echo "Creating an empty commit to trigger actions."
