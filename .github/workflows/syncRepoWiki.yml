@@ -23,16 +23,6 @@ jobs:
           git clone $WIKI_REPOSITORY_URL wiki
           echo "Cloned wiki repository to 'wiki' directory."
 
-      - name: Check for updates in wiki
-        run: |
-          git fetch origin main  # Fetch the latest changes
-          if [ "$(git rev-list HEAD...origin/main --count)" -gt 0 ]; then
-            echo "Updates found in the wiki."
-          else
-            echo "No updates found in the wiki. Exiting."
-            exit 0  # Exit if no updates
-          fi
-
       - name: Verify wiki content
         run: |
           echo "Listing contents of the wiki directory:"
@@ -56,11 +46,11 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add wikiSync  # Only add the wikiSync directory
+          git add wikiSync
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Update wikiSync content"
+            git commit -m "Update wiki content"
             echo "Changes committed. Pushing to branch $BRANCH."
-            git push -f $CODE_REPOSITORY_URL HEAD:$BRANCH
+            git push -f $CODE_REPOSITORY_URL HEAD:$BRANCH  # Push to the main repository's main branch
           else
             echo "No changes to commit."
             echo "Creating an empty commit to trigger actions."
